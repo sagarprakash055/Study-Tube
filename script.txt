@@ -1,0 +1,158 @@
+let videos = JSON.parse(localStorage.getItem('studytube_videos') || '[]');
+let activeFilter = 'All';
+
+function getYouTubeId(url) {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes('youtu.be')) return u.pathname.slice(1).split('?')[0];
+    return u.searchParams.get('v') || null;
+  } catch {
+    return null;
+  }
+}
+
+function formatDate(ts) {
+  return new Date(ts).toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+}
+
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  const tm = document.getElementById('toast-msg');
+  tm.textContent = msg;
+  t.querySelector('.t-dot').style.background = isError ? '#e63946' : '#22c55e';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function save() {
+  localStorage.setItem('studytube_videos', JSON.stringify(videos));
+}
+
+function addVideo() {
+  const url = document.getElementById('url-input').value.trim();
+  const subject = document.getElementById('subject-input').value;
+  let title = document.getElementById('title-input').value.trim();
+
+  if (!url) { showToast('Please paste a YouTube URL', true); return; }
+
+  const id = getYouTubeId(url);
+  if (!id) { showToast('Invalid YouTube URL — try again', true); return; }
+
+  if (videos.find(v => v.id === id)) { showToast('Already saved!', true); return; }
+
+  if (!title) title = 'YouTube Video · ' + id;
+
+  const video = { id, url, title, subject, ts: Date.now() };
+  videos.unshift(video);
+  save();
+
+  document.getElementById('url-input').value = '';
+  document.getElementById('title-input').value = '';
+
+  buildFilters();
+  renderGrid();
+  showToast('Video saved to your library!');
+}
+
+function deleteVideo(id) {
+  videos = videos.filter(v => v.id !== id);
+  save();
+  buildFilters();
+  renderGrid();
+  showToast('Video removed');
+}
+
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderGrid();
+}
+
+function buildFilters() {
+  const subjects = ['All', ...new Set(videos.map(v => v.subject))];
+  const tabs = document.getElementById('filter-tabs');
+  tabs.innerHTML = subjects.map(s =>
+    `<button class="filter-tab${s === activeFilter ? ' active' : ''}" 
+      data-filter="${s}" 
+      onclick="setFilter('${s}', this)">
+        ${s} 
+        ${s !== 'All' ? `<span style="opacity:.5">${videos.filter(v => v.subject === s).length}</span>` : ''}
+    </button>`
+  ).join('');
+  document.getElementById('header-count').textContent = videos.length;
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  const filtered = activeFilter === 'All' ? videos : videos.filter(v => v.subject === activeFilter);
+
+  if (!filtered.length) {
+    grid.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+          </svg>
+        </div>
+        <h2>${activeFilter === 'All' ? 'Your library is empty' : 'No videos in ' + activeFilter}</h2>
+        <p>${activeFilter === 'All'
+          ? 'Paste a YouTube link above to start building your personal learning library.'
+          : 'Save a video under this subject to see it here.'}</p>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map((v, i) => {
+    const thumb = `https://img.youtube.com/vi/${v.id}/hqdefault.jpg`;
+    return `
+    <div class="card" style="animation-delay:${i * 0.05}s">
+      <div class="thumb-wrap" onclick="window.open('${v.url}','_blank')">
+        <img src="${thumb}" alt="${v.title}"
+          onerror="this.parentElement.innerHTML='<div class=thumb-error><span>Thumbnail unavailable</span></div>'">
+        <div class="play-overlay">
+          <div class="play-circle">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+        <span class="subject-badge">${v.subject}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title" onclick="window.open('${v.url}','_blank')">${v.title}</div>
+        <div class="card-meta">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+          ${formatDate(v.ts)}
+        </div>
+      </div>
+      <div class="card-actions">
+        <span class="card-url" title="${v.url}">${v.url}</span>
+        <button class="btn btn-danger" onclick="deleteVideo('${v.id}')">Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('url-input').addEventListener('paste', (e) => {
+  setTimeout(() => {
+    const url = e.target.value.trim();
+    const id = getYouTubeId(url);
+    if (id && !document.getElementById('title-input').value) {
+      document.getElementById('title-input').placeholder = 'Loading title... (or type your own)';
+    }
+  }, 50);
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && (e.target.id === 'url-input' || e.target.id === 'title-input')) {
+    addVideo();
+  }
+});
+
+buildFilters();
+renderGrid();

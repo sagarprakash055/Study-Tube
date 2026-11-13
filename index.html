@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyTube — Learn Without Limits</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a class="logo" href="#">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    </div>
+    Study<span>Tube</span>
+  </a>
+  <div class="header-right">
+    <div class="stat-pill"><strong id="header-count">0</strong> videos saved</div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">
+    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+    </svg>
+    Your Personal Learning Library
+  </div>
+  <h1>Save, Organize &<br><em>Master</em> Any Subject</h1>
+  <p>Bookmark YouTube lectures, tutorials & courses in one place. Never lose a great learning resource again.</p>
+
+  <!-- QUICK ADD FORM -->
+  <div class="quick-add">
+    <div class="quick-add-row">
+      <div class="input-group" style="flex:2">
+        <span class="input-label">YouTube URL</span>
+        <input type="url" id="url-input" placeholder="https://youtube.com/watch?v=..." />
+      </div>
+      <div class="input-group" style="flex:1">
+        <span class="input-label">Subject</span>
+        <select id="subject-input">
+          <option value="General">General</option>
+          <option value="Mathematics">Mathematics</option>
+          <option value="Physics">Physics</option>
+          <option value="Chemistry">Chemistry</option>
+          <option value="Biology">Biology</option>
+          <option value="Computer Science">Computer Science</option>
+          <option value="History">History</option>
+          <option value="English">English</option>
+          <option value="Economics">Economics</option>
+          <option value="Geography">Geography</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="quick-add-row">
+      <div class="input-group">
+        <span class="input-label">Video Title</span>
+        <input type="text" id="title-input" placeholder="Give it a name (or leave blank to auto-fill)" />
+      </div>
+    </div>
+    <div class="add-btn-row">
+      <button class="btn btn-primary"  onclick="addVideo()">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        Save Video
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- LIBRARY -->
+<div class="section-header">
+  <h2 class="section-title">My Library</h2>
+  <div class="filter-tabs" id="filter-tabs">
+    <button class="filter-tab active" data-filter="All" onclick="setFilter('All', this)">All</button>
+  </div>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<!-- TOAST NOTIFICATION -->
+<div id="toast"><span class="t-dot"></span><span id="toast-msg">Video saved!</span></div>
+<script src="script.js"></script>
+
+</body>
+</html>
